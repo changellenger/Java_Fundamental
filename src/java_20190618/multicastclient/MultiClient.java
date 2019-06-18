@@ -1,5 +1,4 @@
-package java_20190618.unicastclient;
-
+package java_20190618.multicastclient;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -25,7 +24,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-public class UnicastClient implements ActionListener {
+public class MultiClient implements ActionListener {
 	private String id;
 	private String ip;
 	private int port;
@@ -38,8 +37,7 @@ public class UnicastClient implements ActionListener {
 	private PrintWriter pw;
 	private BufferedReader br;
 	private Socket socket;
-
-	public UnicastClient(String id, String ip, int port) {
+	public MultiClient(String id, String ip, int port) {
 		this.id = id;
 		this.ip = ip;
 		this.port = port;
@@ -48,10 +46,8 @@ public class UnicastClient implements ActionListener {
 		jp2 = new JPanel();
 
 		jl1 = new JLabel("Usage ID : [" + id + "]");
-		// jl1.setBackground(Color.PINK);
 
 		jl2 = new JLabel(" IP : [" + ip + "]");
-		// jl2.setBackground(Color.GREEN);
 
 		jp1.setLayout(new BorderLayout());
 		jp1.add(jl1, BorderLayout.CENTER);
@@ -85,7 +81,7 @@ public class UnicastClient implements ActionListener {
 			public void windowClosing(WindowEvent e) {
 
 				pw.println("exit");
-				String readLine = null;
+			/*	String readLine = null;
 				try {
 					readLine = br.readLine();
 				} catch (IOException e1) {
@@ -94,16 +90,19 @@ public class UnicastClient implements ActionListener {
 				}
 				if (readLine != null && readLine.equals("exit")) {
 					try {
-						if(br != null) br.close();
-						if(pw != null) pw.close();
-						if(socket != null) socket.close();
+						if (br != null)
+							br.close();
+						if (pw != null)
+							pw.close();
+						if (socket != null)
+							socket.close();
 					} catch (IOException e2) {
 						// TODO: handle exception
 						e2.printStackTrace();
 					}
 					System.exit(0);
 				}
-
+*/
 			}
 		});
 	}
@@ -112,51 +111,52 @@ public class UnicastClient implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		Object obj = e.getSource();
-
-		if (obj == jtf) {
-
+		if(obj == jtf){
+			
 			String message = jtf.getText();
-
-			String readLine = sendMessage(message);
-			jta.append(readLine);
+			//시스템마다 개행이 다를때 코딩하는거.
+			//System.getProperty("line.separator") => \n이랑 비슷한거
+			sendMessage(message);
+			//jta.append(readLine);
 			jtf.setText("");
-
-		} else if (obj == jbtn) {
-
+		}else if(obj == jbtn){
+			
 			String message = jtf.getText();
-			message += System.getProperty("line.separator");
-			jta.append(id + " :" + message);
+			sendMessage(message);
+			//jta.append(readLine);
 			jtf.setText("");
 		}
 	}
 
-	private String sendMessage(String message) {
+	private void sendMessage(String message) {
 		pw.println(id + " : " + message); // 서버로 보냄
 
-		// message += System.getProperty("line.separator");
-		// jta.append(id + " :" + message);
-
-		String readLine = null;
+		/*String readLine = null;
 		try {
 			readLine = br.readLine();
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		} // 클라이언트에서 출력
 
 		readLine += System.getProperty("line.separator"); // 개행을 위한 코드
-		return readLine;
+
+		return readLine;*/
 	}
-	
+
 	public void connect() {
 		try {
 			socket = new Socket(ip, port);
 
 			OutputStream out = socket.getOutputStream();
-			pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(out)), true);// true는 오토플러쉬 기능
-
+			pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(out)), true);// true는
+																						// 오토플러쉬
+																						// 기능
 			InputStream in = socket.getInputStream();
 			br = new BufferedReader(new InputStreamReader(in));
+
+			MultiClientThread mct = new MultiClientThread(br, jta);
+			Thread t = new Thread(mct);
+			t.start();
 
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
@@ -169,8 +169,8 @@ public class UnicastClient implements ActionListener {
 
 	public static void main(String[] args) {
 		JFrame.setDefaultLookAndFeelDecorated(true);
-		// UnicastClient uc = new UnicastClient("곽두팔", "127.0.0.1", 3002);
-		UnicastClient uc = new UnicastClient("msg", "192.168.0.159", 3002);
+		// MultiClient uc = new MultiClient("곽두팔", "127.0.0.1", 3003);
+		MultiClient uc = new MultiClient("cn", "192.168.0.147", 3003);
 		uc.connect();
 	}
 }
